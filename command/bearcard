@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# check the number of arguments
+if [ "$#" -eq 0 ] || [ "$#" -gt 1 ]; then
+    echo "Error: The number of arguments is not appropriate. You should use one argument for this command."
+    echo "Example: bearcard \"Make a new directory for the new project\""
+    exit 1
+fi
+
+# check if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is not installed."
+    echo "Please install jq using 'brew install jq' and try again."
+    exit 1
+fi
+
+# set API 
+APIKey="aff6e6a15bfbb70fd1a2c2920c2a5467"
+APIToken="ATTAef9a3337add3f3cf5345ebafc947dcdd830c4eb05fec460a74e8e4309bdfff8d7FC74F4A"
+
+function urlencode() {
+  # a URL encoding function
+  local data
+  data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "data=$1" "")"
+  echo "${data##*data=}"
+}
+
+function num_of_cards() {
+  local ListID=$1
+  all_cards=$(curl --silent --request GET \
+  --url "https://api.trello.com/1/lists/${ListID}/cards?key=${APIKey}&token=${APIToken}" \
+  --header 'Accept: application/json')
+  echo $all_cards | jq '. | length'
+}
+
+list_ids=(
+  "64d37963148aabf5bacc8ef1"  # Todo
+  "64d37963148aabf5bacc8ef2"  # Doing
+  "64d37963148aabf5bacc8ef3"  # Done
+)
+
+# calculate the total number of the cards in the board
+total_number=1
+for id in "${list_ids[@]}"; do
+  total_number=$((total_number + $(num_of_cards $id)))
+done
+
+# encode URL
+message="[PS-$total_number] ${1}"
+encoded_url=$(urlencode "$message")
+
+# create a new card with a new ticket number
+create_card=$(curl --silent --request POST \
+  --url "https://api.trello.com/1/cards?idList=${TodoListID}&key=${APIKey}&token=${APIToken}" \
+  --header 'Accept: application/json' \
+  --data "name=$encoded_url" \
+  -o /dev/null \
+  -w "%{http_code}")
+
+if [[ $create_card == 2* ]]; then
+  echo "Successfully created a new card in Trello: ${message}"
+else
+  echo "Failed to create a new card. Please contact the administrator."
+fi
