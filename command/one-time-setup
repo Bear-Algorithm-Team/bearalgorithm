@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Get the path of the current directory
+SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+
+# Add the directory bearalgorithm/command to ~/.zshrc. It enables to use the customized commands globally.
+echo "export PATH=\"\$PATH:${SCRIPT_PATH}\"" >> ~/.zshrc
+
+# Apply the change
+source ~/.zshrc
