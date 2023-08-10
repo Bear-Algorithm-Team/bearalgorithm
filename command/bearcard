@@ -17,6 +17,7 @@ fi
 # set API 
 APIKey=""
 APIToken=""
+BoardID=""
 
 function urlencode() {
   # a URL encoding function
@@ -27,17 +28,39 @@ function urlencode() {
 
 function num_of_cards() {
   local ListID=$1
+
+  # fetch all the cards in a given list
   all_cards=$(curl --silent --request GET \
   --url "https://api.trello.com/1/lists/${ListID}/cards?key=${APIKey}&token=${APIToken}" \
   --header 'Accept: application/json')
+
+  # check if response is an appropriate JSON
+  echo "$response" | jq empty &>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Error: Invalid JSON response for ${ListID}"
+    return 1
+  fi
+
   echo $all_cards | jq '. | length'
 }
 
-list_ids=(
-  "64d37963148aabf5bacc8ef1"  # Todo
-  "64d37963148aabf5bacc8ef2"  # Doing
-  "64d37963148aabf5bacc8ef3"  # Done
-)
+function fetch_list_ids() {
+    # fetch all the lists
+    response=$(curl --silent --request GET \
+      --url "https://api.trello.com/1/boards/${BoardID}/lists?key=${APIKey}&token=${APIToken}" \
+      --header 'Accept: application/json')
+
+    # fetch the ID of the To Do list
+    echo "$response" | jq -r '.[] | select(.name == "To Do").id'
+
+    # fetch all the list IDs
+    echo "$response" | jq -r '.[].id'
+}
+
+# Call function and capture output in an array
+IFS=$'\n' read -d '' -r -a output_array < <(fetch_list_ids && printf '\0')
+TodoListID="${output_array[0]}"
+list_ids=("${output_array[@]:1}")
 
 # calculate the total number of the cards in the board
 total_number=1
