@@ -36,10 +36,10 @@ async def start(member: discord.Member, target_guild: discord.Guild):
     await dm_channel.send(f"Salute {USER_NAME}! It's time for Daily in #{CHANNEL_NAME}. Please share what you've been working on.")
 
     answers = []
-    for i in range(4):
+    for question in questions:
         # Question to the user via DM
         dm_channel = await member.create_dm()
-        await dm_channel.send(questions[i])
+        await dm_channel.send(question)
 
         # Wait for the user's response in DM
         def check(m):
