@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from discord.ext import commands
 
-if len(sys.argv) == 5:  # The first arg is the name of this file.
+if len(sys.argv) == 6:  # The first arg is the name of this file.
     GUILD_ID = int(sys.argv[1])
     CHANNEL_NAME = sys.argv[2]
     USER_ID = int(sys.argv[3])
