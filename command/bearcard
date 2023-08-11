@@ -19,13 +19,6 @@ APIKey=""
 APIToken=""
 BoardID=""
 
-function urlencode() {
-  # a URL encoding function
-  local data
-  data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "data=$1" "")"
-  echo "${data##*data=}"
-}
-
 function num_of_cards() {
   local ListID=$1
 
@@ -68,9 +61,9 @@ for id in "${list_ids[@]}"; do
   total_number=$((total_number + $(num_of_cards $id)))
 done
 
-# encode URL
+# encode URL using perl's sprintf
 message="[PS-$total_number] ${1}"
-encoded_url=$(urlencode "$message")
+encoded_url=$( echo -n "$message" | perl -pe 's/([^a-zA-Z0-9_.-])/sprintf("%%%02X", ord($1))/ge' )
 
 # create a new card with a new ticket number
 create_card=$(curl --silent --request POST \
