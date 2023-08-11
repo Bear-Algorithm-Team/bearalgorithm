@@ -27,3 +27,5 @@ bearcard "Kakao 2018 #3 Shuttle bus"
 2. Create a new branch for this card, open a new PR for it, and ask a review for it to reviewers.
 
 3. Merge the branch once it is approved, and change the status of the card into `Done`. 
+
+    - We should use `Squash and merge` when merging PRs. Using this, we can write a new commit message for the squashed commit.
