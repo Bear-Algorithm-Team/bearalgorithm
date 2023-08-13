@@ -14,10 +14,13 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
-# set API 
-APIKey="aff6e6a15bfbb70fd1a2c2920c2a5467"
-APIToken="ATTAef9a3337add3f3cf5345ebafc947dcdd830c4eb05fec460a74e8e4309bdfff8d7FC74F4A"
-BoardID="g3XvbpAQ"
+# Get values from config.json
+SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+CONFIG_FILE="${SCRIPT_PATH}/config.json"
+APIKey=$(jq -r '.APIKey' $CONFIG_FILE)
+APIToken=$(jq -r '.APIToken' $CONFIG_FILE)
+BoardID=$(jq -r '.BoardID' $CONFIG_FILE)
+MemberID=$(cat ~/.bearcard/id 2>/dev/null)
 
 function num_of_cards() {
   local ListID=$1
@@ -69,7 +72,7 @@ encoded_url=$( echo -n "$message" | perl -pe 's/([^a-zA-Z0-9_.-])/sprintf("%%%02
 create_card=$(curl --silent --request POST \
   --url "https://api.trello.com/1/cards?idList=${TodoListID}&key=${APIKey}&token=${APIToken}" \
   --header 'Accept: application/json' \
-  --data "name=$encoded_url" \
+  --data "name=$encoded_url&idMembers=$MemberID" \
   -o /dev/null \
   -w "%{http_code}")
 
