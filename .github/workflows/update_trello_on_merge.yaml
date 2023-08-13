@@ -14,4 +14,4 @@ jobs:
         LATEST_COMMIT_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}")
         LATEST_COMMIT_MESSAGE=$(echo "$LATEST_COMMIT_JSON" | jq -r '.commit.message')
         TICKET_NUMBER=$(echo "$LATEST_COMMIT_MESSAGE" | sed -n 's/.*\(\[PS-[0-9]*\]\).*/\1/p')
-        bin/change_card_to_done.sh "$TICKET_NUMBER"
+        bin/change_card_status.sh "$TICKET_NUMBER" "Done"
