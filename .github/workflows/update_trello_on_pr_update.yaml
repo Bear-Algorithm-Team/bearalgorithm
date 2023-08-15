@@ -1,8 +1,11 @@
-name: Update Trello on 
+name: Update Trello on PR update
 
 on:
   pull_request:
-    types: [edited]
+    types:
+      - edited
+      - opened
+      - closed
 
 jobs:
   check-pr-title:
@@ -11,5 +14,10 @@ jobs:
     - uses: actions/checkout@v2
     - run: |
         PR_TITLE="${{ github.event.pull_request.title }}"
-        TICKET_NUMBER=$(echo "$PR_TITLE" | sed -n 's/.*\(\[PS-[0-9]*\]\).*/\1/p')
-        bin/change_card_status.sh "$TICKET_NUMBER" "Doing"
+        TICKET_NUMBER=$(echo "$PR_TITLE" | tr '[:lower:]' '[:upper:]' | sed -n 's/.*\(\[PS-[0-9]*\]\).*/\1/p')
+
+        STATUS="Doing"
+        if [ "${{ github.event.pull_request.state }}" = "closed" ]; then
+          STATUS="${{ github.event.pull_request.merged && 'Done' || 'Deleted' }}"
+        fi
+        bin/change_card_status.sh "$TICKET_NUMBER" "$STATUS"
