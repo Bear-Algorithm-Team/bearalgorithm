@@ -15,8 +15,12 @@ if ! command -v jq &> /dev/null; then
 fi
 
 # Get values from config.json
-SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
-CONFIG_FILE="${SCRIPT_PATH}/config.json"
+CONFIG_FILE=~/.bearcard/config.json
+if [[ ! -f $CONFIG_FILE ]]; then
+    echo "Config file does not exist. Please create it using 'update-trello-api-key' and try again."
+    exit 1
+fi
+
 APIKey=$(jq -r '.APIKey' $CONFIG_FILE)
 APIToken=$(jq -r '.APIToken' $CONFIG_FILE)
 BoardID=$(jq -r '.BoardID' $CONFIG_FILE)
