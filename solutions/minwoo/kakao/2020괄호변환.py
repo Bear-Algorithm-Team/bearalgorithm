@@ -3,10 +3,9 @@ def check_valid(string):
     for str in string :
         if len(st) < 1 :
             st.append(str)
-            continue
-        if str == '(' :
+        elif str == '(' :
             st.append(str)
-        if str == ')' and st[-1] == '(':
+        elif str == ')' and st[-1] == '(':
             st.pop() 
     if not len(st) :
         return True
@@ -33,8 +32,10 @@ def reverse_str(string):
     return temp
 
 def solution(str):
-    if check_valid(str):
+    
+    if str == "":
         return str
+    
     idx = find_balance_index(str)
     u,v =  str[0:idx+1] , str[idx+1:]
     if check_valid(u):
