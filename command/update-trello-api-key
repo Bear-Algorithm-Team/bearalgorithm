@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo "You are updating the Trello API key, token & the board ID."
+echo "WARN: If it is invalid, you can't use bearcard anymore. Please ask the administrator for specific values to input before updating."
+
+# ask the user if they have the specific values
+read -p "Have you obtained the specific values from the administrator? (Y/n) " yn
+[[ $yn =~ ^[Yy] ]] || { echo "Please contact the administrator to get the values."; exit 1; }
+
+# read the values from the user
+read -p "Input a new API key? " api_key
+read -p "Input a new API token? " api_token
+read -p "Input a new Board ID? " board_id
+
+# save it as a JSON format file
+mkdir -p ~/.bearcard
+echo "{
+  \"APIkey\": \"$api_key\",
+  \"APIToken\": \"$api_token\",
+  \"BoardID\": \"$board_id\"
+}" > ~/.bearcard/config.json
+
+echo "The content of a new config file: "
+cat ~/.bearcard/config.json
