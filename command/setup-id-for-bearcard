@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# check the number of arguments
+if [ "$#" -eq 0 ] || [ "$#" -gt 1 ]; then
+    echo "Error: The number of arguments is not appropriate. You should use one argument for this command."
+    echo "Example: setup-id-for-bearcard \"Kangwook\""
+    exit 1
+fi
+
+# check if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is not installed."
+    echo "Please install jq using 'brew install jq' and try again."
+    exit 1
+fi
+
+# Get values from config.json
+SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+CONFIG_FILE="${SCRIPT_PATH}/config.json"
+APIKey=$(jq -r '.APIKey' $CONFIG_FILE)
+APIToken=$(jq -r '.APIToken' $CONFIG_FILE)
+BoardID=$(jq -r '.BoardID' $CONFIG_FILE)
+
+# get the full member list
+response=$(curl -s "https://api.trello.com/1/boards/${BoardID}/members?key=${APIKey}&token=${APIToken}")
+
+# check if it is a proper JSON message
+echo "$response" | jq . > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    # get the id of a given name and save it to a file
+    mkdir -p ~/.bearcard
+    OUTPUT_FILE=~/.bearcard/id
+    echo "$response" | jq -r --arg name "$1" '.[] | select((.fullName | ascii_downcase) | contains($name | ascii_downcase)) | .id' > $OUTPUT_FILE
+
+    # show the content of the file
+    echo "Successfully saved your ID. Saved ID: "
+    cat $OUTPUT_FILE
+else
+    echo "Failed to get your ID. Please contact the administrator."
+fi
