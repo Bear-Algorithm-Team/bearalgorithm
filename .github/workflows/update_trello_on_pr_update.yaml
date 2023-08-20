@@ -21,3 +21,7 @@ jobs:
           STATUS="${{ github.event.pull_request.merged && 'Done' || 'Deleted' }}"
         fi
         bin/change_card_status.sh "$TICKET_NUMBER" "$STATUS"
+      env:
+        APIKey: ${{ secrets.TRELLO_API_KEY }}
+        APIToken: ${{ secrets.TRELLO_API_TOKEN }}
+        BoardID: ${{ secrets.TRELLO_BOARD_ID }}

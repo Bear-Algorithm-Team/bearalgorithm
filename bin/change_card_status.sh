@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# set API 
-APIKey=""
-APIToken=""
-BoardID=""
+# Note: this script should run with the environmental variables such as APIKey, APIToken and BoardID.
 
 function find_card_id_of_ticket() {
   local ListID=$1
