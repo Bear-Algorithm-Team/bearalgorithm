@@ -15,7 +15,7 @@ Usage: $SCRIPT_NAME [OPTIONS] "New card name"
 Options:
   -s, --setup-id    Set up assignee ID for automatic assignment of new cards
   -u, --update-key  Update Trello API key & token
-  -r, --remove      Remove a card that contains a given string
+  -r, --remove      Remove a card that contains a given ticket number
   -h, --help        Display this help message
 
 Examples:
@@ -153,11 +153,11 @@ function setup_id() {
 }
 
 function remove_card() {
-  SCRIPT_PATH="$(realpath $0)"
-  PARENT_DIR="$(dirname $(dirname $SCRIPT_PATH))"
+  SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+  PARENT_DIR="$(dirname $SCRIPT_PATH)"
 
   export APIKey APIToken BoardID
-  processed_str=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+  processed_str=$(echo "$1" | tr '[:lower:]' '[:upper:]' | sed -nE '/^PS-[0-9]+$/p')
 
   echo "Trying to delete \"$processed_str\"..."
   "$PARENT_DIR"/change_card_status.sh "$processed_str" "Deleted"
