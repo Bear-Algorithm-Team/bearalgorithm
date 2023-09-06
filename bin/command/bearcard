@@ -15,12 +15,14 @@ Usage: $SCRIPT_NAME [OPTIONS] "New card name"
 Options:
   -s, --setup-id    Set up assignee ID for automatic assignment of new cards
   -u, --update-key  Update Trello API key & token
+  -r, --remove      Remove a card that contains a given ticket number
   -h, --help        Display this help message
 
 Examples:
   $SCRIPT_NAME "New card name"                   # Create a new card with name "New card name"
   $SCRIPT_NAME --setup-id "Kangwook"             # Set up assignee ID for automatic assignment
   $SCRIPT_NAME --update-key                      # Update Trello API key & token
+  $SCRIPT_NAME --remove "PS-106"                 # Remove a card that contains "PS-106"
 EOF
 }
 
@@ -37,6 +39,7 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
+function check_config_file() {
 # Get values from config.json
 CONFIG_FILE=~/.${SCRIPT_NAME}/config.json
 if [[ ! -f $CONFIG_FILE ]]; then
@@ -48,19 +51,18 @@ APIKey=$(jq -r '.APIKey' $CONFIG_FILE)
 APIToken=$(jq -r '.APIToken' $CONFIG_FILE)
 BoardID=$(jq -r '.BoardID' $CONFIG_FILE)
 MemberID=$(cat ~/.${SCRIPT_NAME}/id 2>/dev/null)
+}
 
 function num_of_cards() {
-  local ListID=$1
-
   # fetch all the cards in a given list
   all_cards=$(curl --silent --request GET \
-  --url "https://api.trello.com/1/lists/${ListID}/cards?key=${APIKey}&token=${APIToken}" \
+  --url "https://api.trello.com/1/boards/${BoardID}/cards?key=${APIKey}&token=${APIToken}" \
   --header 'Accept: application/json')
 
   # check if response is an appropriate JSON
   echo "$response" | jq empty &>/dev/null
   if [ $? -ne 0 ]; then
-    echo "Error: Invalid JSON response for ${ListID}"
+    echo "Error: Invalid JSON response for all cards API"
     return 1
   fi
 
@@ -74,23 +76,16 @@ function fetch_list_ids() {
       --header 'Accept: application/json')
 
     # fetch the ID of the To Do list
-    echo "$response" | jq -r '.[] | select(.name == "To Do").id'
-
-    # fetch all the list IDs
-    echo "$response" | jq -r '.[].id'
+    echo "$response" | jq -r '.[] | select(.name == "To Do").id' | tr -d '\r'
 }
 
 function create_card() {
 # Call function and capture output in an array
 IFS=$'\n' read -d '' -r -a output_array < <(fetch_list_ids && printf '\0')
-TodoListID="${output_array[0]}"
-list_ids=("${output_array[@]:1}")
+TodoListID="${output_array}"
 
 # calculate the total number of the cards in the board
-total_number=1
-for id in "${list_ids[@]}"; do
-  total_number=$((total_number + $(num_of_cards $id)))
-done
+total_number=$(( 1 + $(num_of_cards) ))
 
 # encode URL using perl's sprintf
 message="[PS-$total_number] ${1}"
@@ -157,6 +152,17 @@ function setup_id() {
   fi
 }
 
+function remove_card() {
+  SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
+  PARENT_DIR="$(dirname $SCRIPT_PATH)"
+
+  export APIKey APIToken BoardID
+  processed_str=$(echo "$1" | tr '[:lower:]' '[:upper:]' | sed -nE '/^PS-[0-9]+$/p')
+
+  echo "Trying to delete \"$processed_str\"..."
+  "$PARENT_DIR"/change_card_status.sh "$processed_str" "Deleted"
+}
+
 # Parse options and arguments
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -169,11 +175,17 @@ while [[ $# -gt 0 ]]; do
       update_key
       shift
       ;;
+    -r|--remove)
+      check_config_file
+      remove_card "$2"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
       ;;
     *) # Default case: If no option, then it's the card name
+      check_config_file
       create_card "$1"
       shift
       ;;
