@@ -1,6 +1,6 @@
 
 def solution(tickets):
-    def dfs(node,path,ticket_cnt): 
+    def dfs(node,path): 
 
         for i in range(len(tickets)):
             a,b = tickets[i] # a -> b 
