@@ -44,3 +44,15 @@ bearcard --setup-id "Your Trello name"
 ```
 
 If you run this command with your Trello name, your Trello ID will be fetched and it will be saved in `~/.bearcard/id`. Then Trello will assign you as the assignee for the card automatically when you run bearcard.
+
+
+## License
+
+The files listed below are released under the MIT License:
+
+```
+bin/command/bearcard
+bin/command/one-time-setup
+```
+
+The rest of the files in this project are not covered by this license.
