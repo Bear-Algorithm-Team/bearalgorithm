@@ -32,18 +32,16 @@ def step1():
         board[i][j] = k
 
 def calc_score():
-    global ans
-    for k,_set in _map.items():
-        for i in range(n):
-            for j in range(n):
-                if board[i][j] == k :
-                    friends = 0
-                    for dy,dx in ((0,1),(0,-1),(1,0),(-1,0)):
-                        ny,nx = dy+i,dx+j
-                        if 0<=ny<n and 0<=nx<n:
-                            if board[ny][nx] in _set :
-                                friends+=1
-                    ans += int(10**(friends-1))
+    ans = 0
+    for i in range(n):
+        for j in range(n):
+            friends = 0
+            for dy,dx in ((0,1),(0,-1),(1,0),(-1,0)):
+                ny,nx = dy+i,dx+j
+                if not(0<=ny<n and 0<=nx<n): continue
+                if board[ny][nx] in _map[board[i][j]] :
+                    friends+=1
+            ans += int(10**(friends-1))
+    return ans
 step1()
-calc_score()
-print(ans)
+print(calc_score())
